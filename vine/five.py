@@ -91,19 +91,8 @@ if sys.version_info < (3, 3):
     except ImportError:  # pragma: no cover
         ctypes = None  # noqa
 
-    if SYSTEM == 'Darwin' and ctypes is not None:
-        from ctypes.util import find_library
-        libSystem = ctypes.CDLL(find_library('libSystem.dylib'))
-        CoreServices = ctypes.CDLL(find_library('CoreServices'),
-                                   use_errno=True)
-        mach_absolute_time = libSystem.mach_absolute_time
-        mach_absolute_time.restype = ctypes.c_uint64
-        absolute_to_nanoseconds = CoreServices.AbsoluteToNanoseconds
-        absolute_to_nanoseconds.restype = ctypes.c_uint64
-        absolute_to_nanoseconds.argtypes = [ctypes.c_uint64]
-
-        def _monotonic():
-            return absolute_to_nanoseconds(mach_absolute_time()) * 1e-9
+    if SYSTEM == 'Darwin':
+        from monotonic import monotonic as _monotonic
 
     elif SYSTEM == 'Linux' and ctypes is not None:
         # from stackoverflow:
